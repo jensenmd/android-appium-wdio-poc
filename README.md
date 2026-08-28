@@ -2,6 +2,8 @@
 
 A deliberately small native Android automation proof of concept built with Appium, WebdriverIO, TypeScript, Mocha, and UiAutomator2 on Windows 11.
 
+[![CI Status](https://github.com/jensenmd/android-appium-wdio-poc/actions/workflows/validate.yml/badge.svg)](https://github.com/jensenmd/android-appium-wdio-poc/actions/workflows/validate.yml)
+
 ## Scope
 
 This project demonstrates a local emulator baseline:
@@ -133,3 +135,4 @@ Checked August 28, 2026: `npm audit --omit=dev` reported zero production vulnera
 ## License
 
 MIT
+
