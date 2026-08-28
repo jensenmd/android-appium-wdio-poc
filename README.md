@@ -1,81 +1,134 @@
-# Outside Mobile QA POC
+# Android Appium + WebdriverIO POC
 
-A deliberately small, interview-focused Android automation project using Appium, WebdriverIO, TypeScript, and Mocha on Windows 11.
+A deliberately small native Android automation proof of concept built with Appium, WebdriverIO, TypeScript, Mocha, and UiAutomator2 on Windows 11.
 
-## What it proves
+## Scope
 
-- Starts a real Android app through Appium and UiAutomator2.
-- Covers launch, navigation, and back-navigation behavior.
-- Captures a screenshot and XML page source automatically on failure.
-- Uses environment-based device naming so the same tests can later run on a real device or device cloud.
+This project demonstrates a local emulator baseline:
 
-The test target is Android's built-in Settings app, so no sample APK is required.
+- Opens Android's built-in Settings app through Appium and UiAutomator2.
+- Checks the Settings home screen, forward navigation, and back navigation.
+- Saves a screenshot and Android UI hierarchy when a test fails.
+- Type-checks the WebdriverIO configuration and test suite in CI.
+
+Using the built-in Settings app keeps the repository self-contained; no sample APK is required. This is a learning POC, not evidence of production framework ownership, real-device coverage, device-cloud execution, or cross-version compatibility.
+
+```mermaid
+flowchart LR
+    T[TypeScript tests] --> W[WebdriverIO runner]
+    W --> A[Appium server]
+    A --> U[UiAutomator2]
+    U --> S[Android Settings app]
+    W --> E[Failure evidence]
+```
+
+## Verified environment
+
+The full three-test suite was run locally on August 28, 2026 with:
+
+- Windows 11
+- Node.js 24.14.0 and npm 11.9.0
+- Eclipse Temurin JDK 17.0.20.1
+- Appium 3.7.x and UiAutomator2 8.5.x
+- Android 15 / API 35 Medium Phone emulator
+
+See [the verified-run record](docs/verified-run.md) for the result and a sanitized excerpt of the failure evidence used during debugging.
 
 ## Prerequisites
 
-- Node.js and npm
+- Node.js 24 and npm
 - Git
 - Java JDK 17 or newer
-- Android Studio, Android SDK Platform Tools, and an Android emulator
-- `JAVA_HOME` and `ANDROID_HOME` configured; Android `platform-tools` and `emulator` available on `PATH`
+- Android Studio, an Android SDK, and an Android emulator
+- `JAVA_HOME` and `ANDROID_HOME` configured
+- Android SDK `platform-tools` and `emulator` directories on `PATH`
 
-## Install and run
+In PowerShell, verify the environment before installing dependencies:
 
 ```powershell
-npm install
+node --version
+npm --version
+java -version
+adb version
+emulator -version
+```
+
+If `adb` or `emulator` is not found, add these directories to `PATH`, substituting your SDK location if necessary:
+
+```text
+%LOCALAPPDATA%\Android\Sdk\platform-tools
+%LOCALAPPDATA%\Android\Sdk\emulator
+```
+
+## Install
+
+```powershell
+npm ci
 npx appium driver doctor uiautomator2
+```
+
+The UiAutomator2 driver is pinned as a development dependency. The doctor command verifies its external Android and Java requirements.
+
+Create and boot an Android virtual device in Android Studio's Device Manager. Confirm that exactly the intended target is available:
+
+```powershell
+adb devices -l
+```
+
+## Run
+
+Start Appium in one PowerShell window:
+
+```powershell
 npm run appium
 ```
 
-Leave Appium running. In a second PowerShell window, boot an emulator and verify it appears:
+In a second window:
 
 ```powershell
-adb devices
 npm run check
 npm run test:smoke
 npm test
 ```
 
-Run only the launch smoke test with `npm run test:smoke`. Type-check without using a device with `npm run check`.
+The smoke test verifies that Appium has opened the Settings home screen. It is not a cold-launch, installation, or application-lifecycle test.
+
+To override the default local device label:
+
+```powershell
+$env:ANDROID_DEVICE_NAME = "Your emulator name"
+npm test
+```
+
+This override is convenient locally, but device-cloud execution would also require provider authentication, remote connection settings, and provider-specific capabilities.
 
 ## Failure evidence
 
-Failed tests save a timestamped screenshot (`.png`) and Android UI hierarchy (`.xml`) under `artifacts/`. The folder is ignored by Git because runtime evidence can be large or device-specific.
+Failed tests attempt to save both a timestamped screenshot (`.png`) and Android UI hierarchy (`.xml`) under `artifacts/`. Runtime artifacts are ignored because they may be large, device-specific, or contain incidental device information. Only reviewed and sanitized evidence belongs in `docs/`.
 
-## Verified result
+## Test design
 
-Validated locally on Windows 11 with an Android 15 / API 35 Medium Phone emulator:
+- `maxInstances: 1` keeps the single-emulator baseline sequential.
+- A pre-test hook reopens Settings and backs out of a restored subpage before each check.
+- Text selectors keep this POC readable but make it dependent on English labels and Android Settings UI details.
+- Product-owned mobile tests should prefer stable accessibility identifiers or resource IDs when available.
 
-```text
-✓ @smoke launches the Settings app
-✓ opens Network & internet
-✓ supports navigating back to the Settings home screen
+## Current limitations
 
-3 passing (7.4s)
-1 spec file passed
-```
+- One local Android 15 emulator only
+- Android Settings rather than a product APK
+- No real-device, device-cloud, iOS, parallel, install, or lifecycle coverage
+- English and Android-version-dependent selectors
+- A pragmatic bounded back-navigation reset rather than app-data isolation
+- CI validates locked installation and TypeScript only; emulator tests remain local
 
-The first full run exposed two Android 15 compatibility issues: a heading represented as an accessibility description rather than text, and Settings restoring its previous subpage between tests. The failure screenshot and XML hierarchy identified both causes. After updating the selector and deterministic test reset, the complete suite passed.
+## Dependency status
 
-Real-device execution, a cloud device provider, parallelization, and CI are intentionally deferred follow-on work.
+Checked August 28, 2026: `npm audit --omit=dev` reported zero production vulnerabilities. The complete development tree reported 15 advisories (1 moderate and 14 high) in transitive test tooling. Automated forced fixes were not applied because npm proposed breaking WebdriverIO changes; upgrades should be evaluated and the emulator suite rerun.
 
-## Interview talking points
+## Engineering notes
 
-- **Appium** is the automation server translating WebDriver commands into mobile-platform actions.
-- **WebdriverIO** is the JavaScript/TypeScript client and test runner that supplies configuration, assertions, hooks, and reporting.
-- **UiAutomator2** is the Android-specific Appium driver used to interact with native UI elements.
-- Selectors prefer visible user-facing text here for readability, but production tests should favor stable accessibility IDs or resource IDs when the app team controls them.
-- One session at a time (`maxInstances: 1`) keeps the local emulator baseline deterministic before adding parallel execution.
-- Failure screenshots show what the user saw; page-source XML helps diagnose selector and UI-state problems.
-- Device-cloud and CI work comes after local stability, because scaling an unreliable test only produces more noise.
-
-## Known setup status
-
-The local stack is fully operational: Node, npm, Git, JDK 17, Android Studio, Android SDK Platform Tools, Appium 3, UiAutomator2, and an Android 15 emulator. TypeScript validation, the smoke test, and the full three-test suite pass. The production dependency audit reports zero vulnerabilities; npm currently reports advisories in development-only transitive tooling.
-
-## Project status
-
-This repository proves a focused local emulator baseline. It does not claim real-device, device-cloud, or CI coverage yet.
+[Engineering notes](ENGINEERING_NOTES.md) explain the decisions, observed failures, and limits without presenting this POC as production experience.
 
 ## License
 

@@ -45,7 +45,20 @@ export const config: WebdriverIO.Config = {
     const safeName = test.title.replace(/[^a-z0-9]+/gi, '-').toLowerCase();
     const stamp = new Date().toISOString().replace(/[:.]/g, '-');
     const prefix = path.join(artifactRoot, `${stamp}-${safeName}`);
-    await browser.saveScreenshot(`${prefix}.png`);
-    await writeFile(`${prefix}.xml`, await browser.getPageSource(), 'utf8');
+
+    const captures = await Promise.allSettled([
+      browser.saveScreenshot(`${prefix}.png`),
+      (async () => {
+        const source = await browser.getPageSource();
+        await writeFile(`${prefix}.xml`, source, 'utf8');
+      })()
+    ]);
+
+    for (const [index, capture] of captures.entries()) {
+      if (capture.status === 'rejected') {
+        const kind = index === 0 ? 'screenshot' : 'page source';
+        console.warn(`Could not capture failure ${kind}:`, capture.reason);
+      }
+    }
   }
 };

@@ -1,5 +1,5 @@
 {
-  "name": "outside-mobile-qa-poc",
+  "name": "android-appium-wdio-poc",
   "version": "1.0.0",
   "description": "Small Android mobile QA proof-of-concept using Appium, WebdriverIO, and TypeScript.",
   "private": true,

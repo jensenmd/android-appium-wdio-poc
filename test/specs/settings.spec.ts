@@ -4,7 +4,7 @@ const networkEntry = () =>
   $('android=new UiSelector().text("Network & internet")');
 
 describe('Android Settings', () => {
-  it('@smoke launches the Settings app', async () => {
+  it('@smoke opens the Settings home screen', async () => {
     await expect(await browser.getCurrentActivity()).toBe('.Settings');
     await expect($('android=new UiSelector().textContains("Settings")')).toBeDisplayed();
   });
