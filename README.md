@@ -1,5 +1,7 @@
 # Android Appium + WebdriverIO POC
 
+![android-appium-wdio-poc portfolio project card](android-appium-wdio-poc-project-card.png)
+
 A deliberately small native Android automation proof of concept built with Appium, WebdriverIO, TypeScript, Mocha, and UiAutomator2 on Windows 11.
 
 [![CI Status](https://github.com/jensenmd/android-appium-wdio-poc/actions/workflows/validate.yml/badge.svg)](https://github.com/jensenmd/android-appium-wdio-poc/actions/workflows/validate.yml)
@@ -141,7 +143,7 @@ This project is part of a broader QA portfolio demonstrating complementary quali
 
 | Project | Focus |
 |---|---|
-| [android-appium-wdio-poc](https://github.com/jensenmd/android-appium-wdio-poc) | Native Android UI automation proof of concept using Appium, WebdriverIO, TypeScript, and UiAutomator2 |
+| [android-appium-wdio-poc](https://github.com/jensenmd/android-appium-wdio-poc) **(this repository)** | Native Android UI automation proof of concept using Appium, WebdriverIO, TypeScript, and UiAutomator2 |
 | [mapmyrun-quality-investigation](https://github.com/jensenmd/mapmyrun-quality-investigation) | Black-box mobile and GPS quality investigation using field evidence and bounded conclusions |
 | [restful-booker-qa](https://github.com/jensenmd/restful-booker-qa) | Layered API and UI automation using Postman, Newman, Playwright, and GitHub Actions |
 | [pharmacy-spend-etl-qa](https://github.com/jensenmd/pharmacy-spend-etl-qa) | ETL pipeline and SQL-driven data-integrity validation modeled after healthcare analytics work |
